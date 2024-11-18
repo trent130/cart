@@ -1,26 +1,17 @@
+import { neon } from '@neondatabase/serverless';
 import { Injectable } from '@nestjs/common';
-import { CreateDatabaseDto } from './dto/create-database.dto';
-import { UpdateDatabaseDto } from './dto/update-database.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DatabaseService {
-  create(createDatabaseDto: CreateDatabaseDto) {
-    return 'This action adds a new database';
-  }
+  private readonly sql;
 
-  findAll() {
-    return `This action returns all database`;
+  constructor(private configService: ConfigService) {
+      const databaseUrl = this.configService.get('DATABASE_URL');
+      this.sql = neon(databaseUrl);
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} database`;
-  }
-
-  update(id: number, updateDatabaseDto: UpdateDatabaseDto) {
-    return `This action updates a #${id} database`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} database`;
+      async getData() {
+      const data = await this.sql`...`;
+      return data;
   }
 }
