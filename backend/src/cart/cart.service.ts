@@ -22,7 +22,6 @@ export class CartService {
     }
   }
 
-
   async viewCart(){
     try {
       const cart = await this.prisma.cart.findMany()
