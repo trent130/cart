@@ -1,4 +1,4 @@
-import { Controller, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Controller, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { PrismaService } from '../database/prisma/prisma.service'
@@ -73,8 +73,11 @@ export class CartService {
         throw new NotFoundException('çart item not found')
       }
       return cartItem;
-    } catch(error) {
-      throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND)
+    }  catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Cart item not found');
+      }
+      throw new InternalServerErrorException('Error deleting cart item');
     }
   }
 }
