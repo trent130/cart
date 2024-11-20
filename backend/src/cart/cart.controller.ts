@@ -7,37 +7,42 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
-  @Post()
+  // Add to Cart (Updated for Add to Cart functionality)
+  @Post('add') // Endpoint specifically for adding an item to the cart
   @UsePipes(new ValidationPipe())
-  @HttpCode(HttpStatus.OK)
-  create(@Body() createCartDto: CreateCartDto) {
-    return this.cartService.createCart(createCartDto);
+  @HttpCode(HttpStatus.CREATED) // HTTP Status 201 for item creation
+  async addToCart(@Body() createCartDto: CreateCartDto) {
+    return this.cartService.createCart(createCartDto); // Call CartService to add item
   }
 
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  @UsePipes(new ValidationPipe())
-  findAll() {
-    return this.cartService.viewCart();
-  }
-
-  @Get(':id')
+  // View all cart items (filtered by userId)
+  @Get(':userId')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
-  findOne(@Param('id') id: string) {
-    return this.cartService.viewCartItem(id);
+  async findAll(@Param('userId') userId: string) {
+    return this.cartService.viewCart(userId);  // Pass userId to view their specific cart
   }
 
-  @Patch(':id')
+  // View a specific cart item (filtered by userId)
+  @Get(':userId/:id')
+  @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
-  update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto) {
-    return this.cartService.updateCart(id, updateCartDto);
+  async findOne(@Param('userId') userId: string, @Param('id') id: string) {
+    return this.cartService.viewCartItem(userId, id);  // Ensure cart item belongs to the user
   }
 
-  @Delete(':id')
+  // Update a cart item (filtered by userId)
+  @Patch(':userId/:id')
+  @UsePipes(new ValidationPipe())
+  async update(@Param('userId') userId: string, @Param('id') id: string, @Body() updateCartDto: UpdateCartDto) {
+    return this.cartService.updateCart(userId, id, updateCartDto);
+  }
+
+  // Remove a cart item (filtered by userId)
+  @Delete(':userId/:id')
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.cartService.removeCartItem(id);
+  async remove(@Param('userId') userId: string, @Param('id') id: string) {
+    return this.cartService.removeCartItem(userId, id);
   }
 }

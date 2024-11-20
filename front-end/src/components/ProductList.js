@@ -10,15 +10,20 @@ const ProductList = ({ products, onAddToCart }) => {
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardMedia
               component="img"
-              sx={{ height: 200, objectFit: 'cover' }}
-              image={product.image}
+              sx={{
+                height: 200,
+                objectFit: 'cover',
+              }}
+              image={product.image} // image should be correct now
               alt={product.name}
             />
             <CardContent sx={{ flexGrow: 1 }}>
               <Typography gutterBottom variant="h5" component="h2">
                 {product.name}
               </Typography>
-              <Typography>{product.description}</Typography>
+              <Typography>
+                {product.description}
+              </Typography>
               <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
                 ${product.price.toFixed(2)}
               </Typography>
