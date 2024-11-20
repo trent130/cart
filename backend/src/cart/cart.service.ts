@@ -1,38 +1,80 @@
-import { Injectable } from '@nestjs/common';
+import { Controller, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { PrismaService } from '../database/prisma/prisma.service'
+
 
 @Injectable()
 export class CartService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createCartDto: CreateCartDto) {
-    return this.prisma.cart.create({
-      data: createCartDto,
-    });
+  async createCart(createCartDto: CreateCartDto) {
+    try {
+      const cart = await this.prisma.cart.create({
+        data: createCartDto,
+      })
+      if(!cart) {
+        throw new NotFoundException('Error creating cart')  
+      }
+      return  cart;
+    }catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND);
+    }
   }
 
-  async findAll(){
-    return this.prisma.cart.findMany();
+
+  async viewCart(){
+    try {
+      const cart = await this.prisma.cart.findMany()
+      if(!cart) {
+        throw new NotFoundException('Error viewing cart')
+        }
+        return cart;
+    } catch(error) {
+      throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND)
+    }
   }
 
-  async findOne(id: string) {
-    return this.prisma.cart.findUnique({
-      where: { id },
-    });
+  async viewCartItem(id: string) {
+    try {
+      const cartItem = await this.prisma.cart.findUnique({
+        where: { id }
+      })
+      if (!cartItem) {
+        throw new NotFoundException('cart item not found')
+      }
+      return cartItem;
+    } catch {
+      throw new HttpException('Error viewing cart item', HttpStatus.NOT_FOUND)
+    }
   }
 
-  async update(id: string, updateCartDto: UpdateCartDto) {
-    return this.prisma.cart.update({
-      where: { id },
-      data: updateCartDto,
-    });
+  async updateCart(id: string, updateCartDto: UpdateCartDto) {
+    try {
+      const cart = await this.prisma.cart.update({
+        where: { id},
+        data: updateCartDto
+      })
+      if (!cart) {
+        throw new NotFoundException('Id specified not found')
+      }
+      return cart;
+    } catch (error) {
+       throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND)
+    }
   }
 
-  async remove(id: string){
-    return this.prisma.cart.delete({
-      where: { id }
-    });
+  async removeCartItem(id: string){
+    try {
+      const cartItem = await this.prisma.cart.delete({
+        where: { id }
+      })
+      if (!cartItem) {
+        throw new NotFoundException('çart item not found')
+      }
+      return cartItem;
+    } catch(error) {
+      throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND)
+    }
   }
 }
