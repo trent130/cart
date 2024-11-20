@@ -5,13 +5,16 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
-  app.useGlobalFilters(new HttpErrorFilter());
+  
+  // More permissive CORS configuration
   app.enableCors({
-    origin: ['http://127.0.0.1:3001', 'http://localhost:3001'],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Çontent-Type', 'Authorization'],
+    origin: true, // Allow all origins in development
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: '*',
+    credentials: false // Set to false if not using credentials
   }); 
+
+  app.useGlobalFilters(new HttpErrorFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Cart API')
@@ -21,5 +24,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

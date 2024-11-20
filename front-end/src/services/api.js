@@ -1,70 +1,62 @@
 // services/api.js
-const API_URL = 'http://127.0.0.1:3000/cart'; // Backend base URL
+import axios from 'axios';
 
-// Add to Cart (POST request)
+const API_URL = 'http://127.0.0.1:5000/cart';
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add to Cart
 export const addToCart = async (userId, product) => {
   try {
-    const response = await fetch(`${API_URL}/add`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId: userId,  // Static userId for testing
-        productId: product.id,
-        quantity: 1, // Assuming default quantity is 1
-      }),
+    const response = await api.post('', {
+      userId: userId.toString(),
+      property_id: parseInt(product.id),
+      quantity: 1,
+      price: product.price.toString()
     });
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
-    console.error('Error adding to cart:', error);
+    console.error('Error adding to cart:', error.response?.data || error.message);
     throw error;
   }
 };
 
-// Fetch Cart items (GET request)
-export const fetchCart = async (userId) => {
+// Fetch Cart
+export async function fetchCart() {
   try {
-    const response = await fetch(`${API_URL}/${userId}`);
-    const data = await response.json();
-    return data;
+    const response = await api.get('/ef5ea50d-a3e0-453a-92b0-f2bb2fa0eeeb');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching cart items:', error);
+    console.error('Error fetching cart items:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+// Remove from Cart
+export const removeFromCart = async (cartId) => {
+  try {
+    await api.delete(`/${cartId}`);
+  } catch (error) {
+    console.error('Error removing from cart:', error.response?.data || error.message);
     throw error;
   }
 };
 
-// Remove item from Cart (DELETE request)
-export const removeFromCart = async (userId, productId) => {
+// Update Cart
+export const updateCart = async (cartId, newQuantity) => {
   try {
-    const response = await fetch(`${API_URL}/${userId}/${productId}`, {
-      method: 'DELETE',
+    const response = await api.patch(`/${cartId}`, {
+      quantity: parseInt(newQuantity)
     });
-    if (!response.ok) {
-      throw new Error('Failed to remove item');
-    }
+    return response.data;
   } catch (error) {
-    console.error('Error removing from cart:', error);
-    throw error;
-  }
-};
-
-// Update Cart item (PATCH request)
-export const updateCart = async (userId, productId, newQuantity) => {
-  try {
-    const response = await fetch(`${API_URL}/${userId}/${productId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ quantity: newQuantity }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update cart item');
-    }
-  } catch (error) {
-    console.error('Error updating cart item:', error);
+    console.error('Error updating cart:', error.response?.data || error.message);
     throw error;
   }
 };
