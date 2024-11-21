@@ -45,4 +45,12 @@ export class CartController {
   async remove(@Param('userId') userId: string, @Param('id') id: string) {
     return this.cartService.removeCartItem(userId, id);
   }
+
+  @Patch('quantity/:id')
+  async updateQuantity(
+    @Param('id') id: string,
+    @Body() updateCartDto: UpdateCartDto
+  ) {
+    return this.cartService.updateQuantity(id, updateCartDto.quantity);
+  }
 }

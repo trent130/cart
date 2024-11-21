@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsDecimal, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsDecimal, IsOptional, Min } from 'class-validator';
 
 export class CreateCartDto {
     @IsOptional()
@@ -11,9 +11,10 @@ export class CreateCartDto {
 
     @IsNotEmpty()
     @IsNumber()
+    @Min(1)
     quantity: number;
     
     @IsNotEmpty()
-    @IsDecimal()
+    @IsNumber()
     price: number;
 }

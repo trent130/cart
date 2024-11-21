@@ -119,4 +119,12 @@ export class CartService {
       throw new InternalServerErrorException('Error deleting cart item');
     }
   }
+
+  // Update the quantity of a cart item
+  async updateQuantity(id: string, quantity: number) {
+    return await this.prisma.cart.update({
+      where: { id },
+      data: { quantity },
+    });
+  }
 }

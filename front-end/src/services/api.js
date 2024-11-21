@@ -1,7 +1,7 @@
 // services/api.js
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:5000/cart';
+const API_URL = 'http://localhost:3000';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -9,16 +9,54 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 5000,
 });
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging and error handling
+api.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', response.status, response.data);
+    return response;
+  },
+  (error) => {
+    if (!error.response) {
+      // Network error
+      console.error('Network Error - Please check if the backend server is running');
+      alert('Cannot connect to server. Please check if the backend is running.');
+    } else {
+      // Server error
+      console.error('API Response Error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Add to Cart
 export const addToCart = async (userId, product) => {
   try {
-    const response = await api.post('', {
+    const response = await api.post('/cart', {
       userId: userId.toString(),
-      property_id: parseInt(product.id),
+      property_id: Number(product.id),
       quantity: 1,
-      price: product.price.toString()
+      price: Number(product.price),
+      name: product.name,
+      description: product.description
     });
     return response.data;
   } catch (error) {
@@ -28,20 +66,21 @@ export const addToCart = async (userId, product) => {
 };
 
 // Fetch Cart
-export async function fetchCart() {
+export async function fetchCart(userId = '1') {
   try {
-    const response = await api.get('/ef5ea50d-a3e0-453a-92b0-f2bb2fa0eeeb');
+    console.log('Fetching cart for userId:', userId);
+    const response = await api.get(`/cart/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching cart items:', error.response?.data || error.message);
-    throw error;
+    return []; // Return empty array on error to prevent UI crashes
   }
 }
 
 // Remove from Cart
-export const removeFromCart = async (cartId) => {
+export const removeFromCart = async (userId, cartId) => {
   try {
-    await api.delete(`/${cartId}`);
+    await api.delete(`/${userId}/${cartId}`);
   } catch (error) {
     console.error('Error removing from cart:', error.response?.data || error.message);
     throw error;
@@ -49,10 +88,14 @@ export const removeFromCart = async (cartId) => {
 };
 
 // Update Cart
-export const updateCart = async (cartId, newQuantity) => {
+export const updateCart = async (userId, cartId, newQuantity) => {
   try {
-    const response = await api.patch(`/${cartId}`, {
-      quantity: parseInt(newQuantity)
+    if (newQuantity < 1) {
+      throw new Error('Quantity cannot be less than 1');
+    }
+    
+    const response = await api.patch(`/${userId}/${cartId}`, {
+      quantity: Number(newQuantity)
     });
     return response.data;
   } catch (error) {

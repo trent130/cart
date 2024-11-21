@@ -19,7 +19,7 @@ const theme = createTheme({
 });
 
 function App() {
-  const userId = "ef5ea50d-a3e0-453a-92b0-f2bb2fa0eeeb";  // Hardcoded userId for testing
+  const userId = "1";  // Hardcoded userId for testing
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -35,8 +35,33 @@ function App() {
 
   // Add item to cart
   const handleAddToCart = async (product) => {
-    const newCartItem = await addToCart(userId, product);
-    setCartItems((prevItems) => [...prevItems, newCartItem]);
+    try {
+      console.log('Adding product to cart:', product);
+      const newCartItem = await addToCart(userId, product);
+      console.log('Response from server:', newCartItem);
+      
+      // Only update cart if the API call was successful
+      if (newCartItem) {
+        setCartItems((prevItems) => {
+          // Check if item already exists in cart
+          const existingItem = prevItems.find(item => item.property_id === product.id);
+          if (existingItem) {
+            // Update quantity if item exists
+            return prevItems.map(item =>
+              item.property_id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            );
+          }
+          // Add new item if it doesn't exist
+          return [...prevItems, newCartItem];
+        });
+      }
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+      // Add user feedback here
+      alert('Failed to add item to cart. Please try again.');
+    }
   };
 
   // Remove item from cart

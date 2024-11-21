@@ -3,9 +3,31 @@ import { Drawer, List, ListItem, ListItemText, IconButton, Typography, Box, Butt
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import { updateCart, removeFromCart } from '../services/api';
 
 const Cart = ({ open, onClose, cartItems, onUpdateQuantity, onRemoveFromCart }) => {
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleUpdateQuantity = async (cartId, newQuantity) => {
+    try {
+      if (newQuantity < 1) {
+        return; // Don't allow quantities less than 1
+      }
+      await updateCart('1', cartId, newQuantity); // Add userId
+      onUpdateQuantity(cartId, newQuantity);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
+  };
+
+  const handleRemoveItem = async (cartId) => {
+    try {
+      await removeFromCart('1', cartId);
+      onRemoveFromCart(cartId);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    }
+  };
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
@@ -21,7 +43,7 @@ const Cart = ({ open, onClose, cartItems, onUpdateQuantity, onRemoveFromCart }) 
                   <IconButton
                     edge="end"
                     aria-label="delete"
-                    onClick={() => onRemoveFromCart(item.id)}
+                    onClick={() => handleRemoveItem(item.id)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -32,11 +54,11 @@ const Cart = ({ open, onClose, cartItems, onUpdateQuantity, onRemoveFromCart }) 
                   secondary={`$${(item.price * item.quantity).toFixed(2)}`}
                 />
                 <ButtonGroup size="small" sx={{ ml: 2 }}>
-                  <Button onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}>
+                  <Button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}>
                     <RemoveIcon fontSize="small" />
                   </Button>
                   <Button disabled>{item.quantity}</Button>
-                  <Button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}>
+                  <Button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}>
                     <AddIcon fontSize="small" />
                   </Button>
                 </ButtonGroup>
